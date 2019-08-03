@@ -1,0 +1,147 @@
+﻿<Grid x:Class="MMA.Prism.ModuleEnvoiFichePaie.MVVM.Views.EnvoiFichePaieView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:MMA.Prism.ModuleEnvoiFichePaie.MVVM.Views"
+             mc:Ignorable="d" 
+             xmlns:prism="http://prismlibrary.com/"
+             xmlns:converter="clr-namespace:MMA.Prism.ModuleEnvoiFichePaie.Helpers.Converters"
+             prism:ViewModelLocator.AutoWireViewModel="True" 
+             MaxHeight="560" MaxWidth="800">
+
+    <Grid.Resources>
+        <BooleanToVisibilityConverter x:Key="booleanToVisibilityConverter"/>
+    </Grid.Resources>
+
+    <Grid.RowDefinitions>
+        <RowDefinition Height="15"/>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+
+    <Border Grid.Row="1" CornerRadius="8" BorderThickness="2" BorderBrush="LightGray" IsEnabled="{Binding IsMainGridEnable}">
+        <!--<StackPanel IsEnabled="{Binding IsMainGridEnable}">-->
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="25"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="25"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="5"/>
+            </Grid.RowDefinitions>
+
+            <!-- Page title -->
+            <TextBlock Grid.Row="0" Grid.Column="1" FontWeight="DemiBold" FontSize="24" Margin="0" 
+                         HorizontalAlignment="Center" TextWrapping="Wrap" Text="Envoie de fiche de paie"/>
+
+            <!-- Brower button -->
+            <Button Grid.Row="1" Grid.Column="1" Content="{Binding BrowseLabelBtn, FallbackValue=Parcourir}" FontSize="15" Margin="5" Width="150" 
+                    FontWeight="SemiBold" Command="{Binding BrowseCommand}" Cursor="Hand"/>
+
+            <!-- FilePaht -->
+            <TextBlock Grid.Row="2" Grid.Column="1" FontSize="13" Margin="5" TextWrapping="Wrap" 
+                         TextAlignment="Center" Text="{Binding FilePath, UpdateSourceTrigger=PropertyChanged}"
+                         Visibility="{Binding IsFilePathCorrect, Converter={StaticResource booleanToVisibilityConverter}}"/>
+
+            <Grid Grid.Row="4" Grid.Column="1" 
+                     Visibility="{Binding IsFilePathVisible, Converter={StaticResource booleanToVisibilityConverter}}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="4*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Email du BCC -->
+                <TextBlock Grid.Row="0" Grid.Column="0" FontSize="13" Margin="0 9 0 0" TextWrapping="Wrap" 
+                         HorizontalAlignment="Right" TextAlignment="Center" Text="Bcc :"/>
+                <TextBox Grid.Row="0" Grid.Column="1" Margin="5" >
+                    <Binding Path="BccMail" FallbackValue="Email du BCC" UpdateSourceTrigger="PropertyChanged">
+                        <Binding.ValidationRules>
+                            <converter:EmailValidationRule />
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox>
+
+                <!-- CcMail -->
+                <TextBlock Grid.Row="1" Grid.Column="0" FontSize="13" Margin="0 9 0 0" TextWrapping="Wrap" 
+                         HorizontalAlignment="Right" TextAlignment="Center" Text="Cc :"/>
+                <TextBox Grid.Row="1" Grid.Column="1" Margin="5" >
+                    <Binding Path="CcMail" FallbackValue="Email du CC" UpdateSourceTrigger="PropertyChanged">
+                        <Binding.ValidationRules>
+                            <converter:EmailValidationRule />
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox>
+
+                <!-- Mail template -->
+                <TextBlock Grid.Row="2" Grid.Column="0" FontSize="13" Margin="0 9 0 0" TextWrapping="Wrap" 
+                         HorizontalAlignment="Right" TextAlignment="Center" Text="Model de mail:"/>
+                <TextBox Grid.Row="2" Grid.Column="1" Margin="5" MinHeight="50" 
+                         Text="{Binding MailTemplate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">                    
+                </TextBox>
+
+                <!-- AdminEmail -->
+                <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="1" Height="30" HorizontalAlignment="Center">
+                    <TextBlock FontSize="13" TextWrapping="Wrap" TextAlignment="Center" Margin="1" Height="18"
+                             Text="Email administrateur :"/>
+                    <TextBox Margin="5 1 3 1" FontSize="13" MinWidth="150" MaxWidth="300"
+                             IsEnabled="{Binding ElementName=UpdateAdminEmail, Path=IsChecked}">
+                        <Binding Path="AdminEmail" FallbackValue="Email de l'administrateur" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
+                            <Binding.ValidationRules>
+                                <converter:EmailValidationRule />
+                            </Binding.ValidationRules>
+                        </Binding>
+                    </TextBox>
+                    <CheckBox Name="UpdateAdminEmail" VerticalAlignment="Center" Margin="0 0 0 -14">
+                        <CheckBox.Content>
+                            <TextBlock VerticalAlignment="Center" FontSize="13" Text="Modifier" FontWeight="SemiBold" Margin="-8 0 0 2"/>
+                        </CheckBox.Content>
+                    </CheckBox>                  
+                </StackPanel>
+
+                <!-- Buttons -->
+                <StackPanel Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" Orientation="Horizontal" 
+                            HorizontalAlignment="Center" Margin="5">
+                    <Button Content="{Binding SendPreviewLabelBtn, FallbackValue=Prévisualiser}" 
+                            FontSize="15" Margin="0 0 5 0" Height="40" Cursor="Hand" IsEnabled="{Binding IsAdminEmailValid}"
+                            FontWeight="SemiBold" Command="{Binding SendPreviewCommand}" />
+                    <Button Content="{Binding SendByMailLabelBtn, FallbackValue=Envoyer}" FontSize="15"
+                            Height="40" Cursor="Hand" FontWeight="SemiBold"
+                            Command="{Binding SendMailCommand}"/>
+                    <Button Content="{Binding ClearBccCcBoxLabelBtn, FallbackValue=Réinitialiser}" 
+                            FontSize="15" Margin="5 0 0 0" Height="40" Cursor="Hand" FontWeight="SemiBold" 
+                            IsEnabled="{Binding IsBccOrCcEmpty}" Command="{Binding CleerBccOrCcMailCommand}"/>
+                </StackPanel>
+            </Grid>
+
+            <!--  -->
+            <StackPanel Orientation="Vertical" Grid.Row="5" Grid.Column="1" Margin="0 5 0 0" 
+                         Visibility="{Binding IsProgressBarVisible, Converter={StaticResource booleanToVisibilityConverter}}">
+                <ProgressBar Height="40" TextBlock.FontWeight="Bold" 
+                           Value="{Binding CurrentProgress, Mode=OneWay, FallbackValue=30, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBlock HorizontalAlignment="Center" Margin="0 5 0 0" FontWeight="SemiBold" FontSize="15">
+                      <Run Text="{Binding ApplicationLoadingLabel}"/>
+                      <Run Text="{Binding ProgressValue, UpdateSourceTrigger=PropertyChanged}"/>
+                </TextBlock>
+            </StackPanel>
+        </Grid>
+        <!--</StackPanel>-->
+    </Border>
+
+</Grid>
