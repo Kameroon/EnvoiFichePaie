@@ -19,46 +19,53 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.Helpers
             {  
                 using (MailMessage mailMessage = new MailMessage())
                 {
-                    mailMessage.From = new MailAddress(emailMessage.AdminEmail);
-                    mailMessage.To.Add(emailMessage.ToEmail);
-                    mailMessage.Subject = emailMessage.Suject;
+                    if (!string.IsNullOrWhiteSpace(emailMessage.AdminEmail))
+                    {
+                        mailMessage.From = new MailAddress(emailMessage.AdminEmail);
+                        mailMessage.To.Add(emailMessage.ToEmail);
+                        mailMessage.Subject = emailMessage.Suject;
 
-                    string currentMonth = DateTime.Now.ToString("MMMM").ToUpper();
-                    string htmlTemplate = File.ReadAllText(emailMessage.MailBody, Encoding.Default);
-                    string body = null;
+                        string currentMonth = DateTime.Now.ToString("MMMM").ToUpper();
+                        string htmlTemplate = File.ReadAllText(emailMessage.MailBody, Encoding.Default);
+                        string body = null;
 
-                    mailMessage.BodyEncoding = Encoding.Default;
-                    mailMessage.IsBodyHtml = true;
+                        mailMessage.BodyEncoding = Encoding.Default;
+                        mailMessage.IsBodyHtml = true;
 
-                    mailMessage.Body = MailConsolidateHelper.BuilBody(body, htmlTemplate, currentMonth, emailMessage.ToEmail);
+                        mailMessage.Body = MailConsolidateHelper.BuilBody(body, htmlTemplate, currentMonth, emailMessage.ToEmail);
 
-                    if (!string.IsNullOrWhiteSpace(emailMessage.Bcc))
-                        mailMessage.Bcc.Add(emailMessage.Bcc);
-                    if (!string.IsNullOrWhiteSpace(emailMessage.Cc))
-                        mailMessage.CC.Add(emailMessage.Cc);
+                        if (!string.IsNullOrWhiteSpace(emailMessage.Bcc))
+                            mailMessage.Bcc.Add(emailMessage.Bcc);
+                        if (!string.IsNullOrWhiteSpace(emailMessage.Cc))
+                            mailMessage.CC.Add(emailMessage.Cc);
 
-                    Attachment attachment;
-                    attachment = new Attachment(emailMessage.FilePath);
-                    mailMessage.Attachments.Add(attachment);
+                        Attachment attachment;
+                        attachment = new Attachment(emailMessage.FilePath);
+                        mailMessage.Attachments.Add(attachment);
 
-                    using (SmtpClient smtpClient = new SmtpClient(Supplier.SMTP_CREDENTIAL, 587))
-                    {                     
-                        smtpClient.Port = 587;
-                        smtpClient.Credentials = new NetworkCredential(
-                            Supplier.USERNAME_CREDENTIAL,
-                            Supplier.PASSWORD_CREDENTIAL);
-
-                        smtpClient.EnableSsl = true;
-
-                        // -- Si cest un test avant envoie m'enoyer tous les mails --
-                        if (emailMessage.IsPreviewMail)
+                        using (SmtpClient smtpClient = new SmtpClient(Supplier.SMTP_CREDENTIAL, 587))
                         {
-                            MailConsolidateHelper.CheckCcAndBcc(emailMessage.AdminEmail, mailMessage);
+                            smtpClient.Port = 587;
+                            smtpClient.Credentials = new NetworkCredential(
+                                Supplier.USERNAME_CREDENTIAL,
+                                Supplier.PASSWORD_CREDENTIAL);
+
+                            smtpClient.EnableSsl = true;
+
+                            // -- Si cest un test avant envoie m'enoyer tous les mails --
+                            if (emailMessage.IsPreviewMail)
+                            {
+                                MailConsolidateHelper.CheckCcAndBcc(emailMessage.AdminEmail, mailMessage);
+                            }
+
+                            smtpClient.Send(mailMessage);
+
+                            result = true;
                         }
-
-                        smtpClient.Send(mailMessage);
-
-                        result = true;
+                    }
+                    else
+                    {
+                        result = false;
                     }
                 }  
             }

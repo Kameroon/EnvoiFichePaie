@@ -10,6 +10,14 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.Helpers
 {
     public static class MailConsolidateHelper
     {
+        /// <summary>
+        /// --   --
+        /// </summary>
+        /// <param name="body"></param>
+        /// <param name="htmlTemplate"></param>
+        /// <param name="currentMonth"></param>
+        /// <param name="toEmail"></param>
+        /// <returns></returns>
         public static string BuilBody(string body, string htmlTemplate,
             string currentMonth, string toEmail)
         {
@@ -20,6 +28,11 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.Helpers
             return body;
         }
 
+        /// <summary>
+        /// --  --
+        /// </summary>
+        /// <param name="adminEmail"></param>
+        /// <param name="mailMessage"></param>
         public static void CheckCcAndBcc(string adminEmail, MailMessage mailMessage)
         {
             Console.WriteLine("Destiné à : " + mailMessage.To.FirstOrDefault());

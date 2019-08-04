@@ -12,6 +12,15 @@ namespace MMA.Prism.Infrastructure.Communs
         public bool? ShowMessage(string message)
         {
             //here you could display a window or just a simple MessageBox or whatever dialog you want...
+            return MessageBox.Show(message, "Info",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information)
+                == MessageBoxResult.OK;
+        }
+
+        public bool? ShowConfirmationMessage(string message)
+        {
+            //here you could display a window or just a simple MessageBox or whatever dialog you want...
             return MessageBox.Show(message, "Confimation",
                 MessageBoxButton.OKCancel,
                 MessageBoxImage.Exclamation)

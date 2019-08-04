@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:MMA.Prism.ModuleEnvoiFichePaie.MVVM.Views"
              mc:Ignorable="d" 
+             xmlns:system="clr-namespace:System;assembly=mscorlib"      
              xmlns:prism="http://prismlibrary.com/"
              xmlns:converter="clr-namespace:MMA.Prism.ModuleEnvoiFichePaie.Helpers.Converters"
              prism:ViewModelLocator.AutoWireViewModel="True" 
@@ -12,6 +13,76 @@
 
     <Grid.Resources>
         <BooleanToVisibilityConverter x:Key="booleanToVisibilityConverter"/>
+        <converter:IsButtonEnabledConverter x:Key="IsButtonEnabledConverter" />
+
+        <!---  ************** En complement de Textbox validation ************** TargetType="{x:Type TextBox} -->
+        <Style x:Key="CustomTextBoxTextStyle" TargetType="TextBox">
+            <Setter Property="BorderBrush" Value="Green" />
+            <Setter Property="MinWidth" Value="392" />
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="MinHeight" Value="30"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="Validation.ErrorTemplate">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <Grid>
+                            <Border BorderBrush="#FFCB2E2E" BorderThickness="1" 
+                                    Background="#11FF0000" IsHitTestVisible="False" x:Name="errorBorder"/>
+                            <AdornedElementPlaceholder x:Name="placeholder" />
+                            <Popup AllowsTransparency="True" HorizontalAlignment="Right" HorizontalOffset="0"
+                                   VerticalOffset="0" PopupAnimation="Fade" Placement="Right" 
+                                   PlacementTarget="{Binding ElementName=errorBorder}" 
+                                   IsOpen="{Binding ElementName=placeholder, Path=AdornedElement.IsFocused, Mode=OneWay}">
+                                <StackPanel Orientation="Horizontal">
+                                    <Polygon  VerticalAlignment="Center" Points="0,4 4,0 4,8" Fill="#FFCB2E2E" 
+                                              Stretch="Fill" Stroke="#FFCB2E2E" StrokeThickness="2" />
+                                    <Border Background="#FFCB2E2E" CornerRadius="4" Padding="4">
+                                        <TextBlock HorizontalAlignment="Center" Foreground="White" FontWeight="Bold" Margin="2,0,0,0"
+                                                   Text="{Binding ElementName=placeholder, Path=AdornedElement.ToolTip, Mode=OneWay}" />
+                                    </Border>
+                                </StackPanel>
+                            </Popup>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="Validation.HasError" Value="True">
+                    <Setter Property="ToolTip" 
+                            Value="{Binding RelativeSource={RelativeSource Self}, Path=(Validation.Errors)[0].ErrorContent}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <!--  ************************  -->
+
+        <!--  Manage placeholder  -->
+        <!--<Style x:Key="placeHolder" TargetType="{x:Type TextBox}" BasedOn="{StaticResource {x:Type TextBox}}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type TextBox}">
+                        <Grid>
+                            <TextBox x:Name="textSource" Background="Transparent" Panel.ZIndex="2" 
+                                     Text="{Binding Path=Text, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                            <TextBox Text="{TemplateBinding Tag}" Background="{TemplateBinding Background}" Panel.ZIndex="1">
+                                <TextBox.Style>
+                                    <Style TargetType="{x:Type TextBox}">
+                                        <Setter Property="Foreground" Value="Transparent"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Path=Text, Source={x:Reference textSource}}" Value="">
+                                                <Setter Property="Foreground" Value="LightGray"/>
+                                                <Setter Property="FontWeight" Value="Bold"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBox.Style>
+                            </TextBox>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>-->
+        <!--  Manage placeholder  -->
     </Grid.Resources>
 
     <Grid.RowDefinitions>
@@ -21,8 +92,8 @@
         <RowDefinition Height="Auto"/>
     </Grid.RowDefinitions>
 
-    <Border Grid.Row="1" CornerRadius="8" BorderThickness="2" BorderBrush="LightGray" IsEnabled="{Binding IsMainGridEnable}">
-        <!--<StackPanel IsEnabled="{Binding IsMainGridEnable}">-->
+    <Border Grid.Row="1" CornerRadius="8" BorderThickness="2" BorderBrush="LightGray" 
+            IsEnabled="{Binding IsMainGridEnable}">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="25"/>
@@ -44,7 +115,8 @@
                          HorizontalAlignment="Center" TextWrapping="Wrap" Text="Envoie de fiche de paie"/>
 
             <!-- Brower button -->
-            <Button Grid.Row="1" Grid.Column="1" Content="{Binding BrowseLabelBtn, FallbackValue=Parcourir}" FontSize="15" Margin="5" Width="150" 
+            <Button Grid.Row="1" Grid.Column="1" Content="{Binding BrowseLabelBtn, FallbackValue=Parcourir}" 
+                    FontSize="15" Margin="5" Width="150" 
                     FontWeight="SemiBold" Command="{Binding BrowseCommand}" Cursor="Hand"/>
 
             <!-- FilePaht -->
@@ -70,7 +142,7 @@
                 <!-- Email du BCC -->
                 <TextBlock Grid.Row="0" Grid.Column="0" FontSize="13" Margin="0 9 0 0" TextWrapping="Wrap" 
                          HorizontalAlignment="Right" TextAlignment="Center" Text="Bcc :"/>
-                <TextBox Grid.Row="0" Grid.Column="1" Margin="5" >
+                <TextBox x:Name="txtBoxBCC" Grid.Row="0" Grid.Column="1" Margin="5" Style="{StaticResource CustomTextBoxTextStyle}">                   
                     <Binding Path="BccMail" FallbackValue="Email du BCC" UpdateSourceTrigger="PropertyChanged">
                         <Binding.ValidationRules>
                             <converter:EmailValidationRule />
@@ -81,7 +153,7 @@
                 <!-- CcMail -->
                 <TextBlock Grid.Row="1" Grid.Column="0" FontSize="13" Margin="0 9 0 0" TextWrapping="Wrap" 
                          HorizontalAlignment="Right" TextAlignment="Center" Text="Cc :"/>
-                <TextBox Grid.Row="1" Grid.Column="1" Margin="5" >
+                <TextBox x:Name="txtBoxCC" Grid.Row="1" Grid.Column="1" Margin="5" Style="{StaticResource CustomTextBoxTextStyle}">
                     <Binding Path="CcMail" FallbackValue="Email du CC" UpdateSourceTrigger="PropertyChanged">
                         <Binding.ValidationRules>
                             <converter:EmailValidationRule />
@@ -97,12 +169,14 @@
                 </TextBox>
 
                 <!-- AdminEmail -->
-                <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="1" Height="30" HorizontalAlignment="Center">
+                <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="1" 
+                            Height="30" HorizontalAlignment="Center">
                     <TextBlock FontSize="13" TextWrapping="Wrap" TextAlignment="Center" Margin="1" Height="18"
                              Text="Email administrateur :"/>
-                    <TextBox Margin="5 1 3 1" FontSize="13" MinWidth="150" MaxWidth="300"
-                             IsEnabled="{Binding ElementName=UpdateAdminEmail, Path=IsChecked}">
-                        <Binding Path="AdminEmail" FallbackValue="Email de l'administrateur" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
+                    <TextBox x:Name="textBoxAdminEmail" Margin="5 1 3 1" FontSize="13" MinWidth="150" MaxWidth="300"
+                             IsEnabled="{Binding ElementName=UpdateAdminEmail, Path=IsChecked}" Style="{StaticResource CustomTextBoxTextStyle}">
+                        <Binding Path="AdminEmail" FallbackValue="Email de l'administrateur" 
+                                 UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
                             <Binding.ValidationRules>
                                 <converter:EmailValidationRule />
                             </Binding.ValidationRules>
@@ -110,23 +184,42 @@
                     </TextBox>
                     <CheckBox Name="UpdateAdminEmail" VerticalAlignment="Center" Margin="0 0 0 -14">
                         <CheckBox.Content>
-                            <TextBlock VerticalAlignment="Center" FontSize="13" Text="Modifier" FontWeight="SemiBold" Margin="-8 0 0 2"/>
+                            <TextBlock VerticalAlignment="Center" FontSize="13" Text="Modifier" 
+                                       FontWeight="SemiBold" Margin="-8 0 0 2"/>
                         </CheckBox.Content>
-                    </CheckBox>                  
+                    </CheckBox>
                 </StackPanel>
 
                 <!-- Buttons -->
                 <StackPanel Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" Orientation="Horizontal" 
                             HorizontalAlignment="Center" Margin="5">
                     <Button Content="{Binding SendPreviewLabelBtn, FallbackValue=Prévisualiser}" 
-                            FontSize="15" Margin="0 0 5 0" Height="40" Cursor="Hand" IsEnabled="{Binding IsAdminEmailValid}"
-                            FontWeight="SemiBold" Command="{Binding SendPreviewCommand}" />
+                            FontSize="15" Margin="0 0 5 0" Height="40" Cursor="Hand" 
+                            IsEnabled="{Binding ElementName=textBoxAdminEmail, Path=Text, Converter={StaticResource IsButtonEnabledConverter}}"                    
+                            FontWeight="SemiBold" Command="{Binding SendPreviewCommand}">                           
+                    </Button>
                     <Button Content="{Binding SendByMailLabelBtn, FallbackValue=Envoyer}" FontSize="15"
                             Height="40" Cursor="Hand" FontWeight="SemiBold"
                             Command="{Binding SendMailCommand}"/>
                     <Button Content="{Binding ClearBccCcBoxLabelBtn, FallbackValue=Réinitialiser}" 
                             FontSize="15" Margin="5 0 0 0" Height="40" Cursor="Hand" FontWeight="SemiBold" 
-                            IsEnabled="{Binding IsBccOrCcEmpty}" Command="{Binding CleerBccOrCcMailCommand}"/>
+                            IsEnabled="{Binding IsBccOrCcEmpty}" Command="{Binding CleerBccOrCcMailCommand}">
+                        <Button.Style>
+                            <Style TargetType="{x:Type Button}">
+                                <Setter Property="IsEnabled" Value="True" />
+                                <Style.Triggers>
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding Text, ElementName=txtBoxBCC}" Value="{x:Static system:String.Empty}" />
+                                            <Condition Binding="{Binding Text, ElementName=textBoxCC}" Value="{x:Static system:String.Empty}" />
+                                            <Condition Binding="{Binding Text, ElementName=textBoxAdminEmail}" Value="{x:Static system:String.Empty}" />
+                                        </MultiDataTrigger.Conditions>
+                                        <Setter Property="IsEnabled" Value="False" />
+                                    </MultiDataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
                 </StackPanel>
             </Grid>
 
@@ -141,7 +234,6 @@
                 </TextBlock>
             </StackPanel>
         </Grid>
-        <!--</StackPanel>-->
     </Border>
 
 </Grid>

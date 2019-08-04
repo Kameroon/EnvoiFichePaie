@@ -18,6 +18,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Input;
+using MMA.Prism.Infrastructure.Communs.Helpers;
 
 //https://stackoverflow.com/questions/1750934/best-logging-approach-for-composite-app
 // https://github.com/NLog/NLog/wiki/Tutorial
@@ -27,7 +28,7 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
 {
     public class EnvoiFichePaieViewModel : ViewModelBase, IDisposable
     {
-        private string ErreurMessage { get; set; }
+        private string ErrorMessage { get; set; }
         private string InfoMessage { get; set; }
 
         private DataTable MYDataTable = new DataTable();
@@ -37,8 +38,8 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
 
         #region -- Privates -- 
         private string _bccMail = "citoyenlamda@gmail.com";
-        private string _ccMail = "citoyenlamda@gmail.com";
-        private string _adminEmail = "citoyenlamda@gmail.com";
+        private string _ccMail; 
+        private string _adminEmail;
         private string _mailTemplate;
         private bool _isBccOrCcEmpty;
         private string _filePath;
@@ -49,8 +50,10 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
         private double _currentProgress;
         private bool _canContinuousSendMail;
         private bool _isMainGridEnable;
+        private bool _isAdminEmailValidVar;
+        private bool _checkIfCanSendMail;
         #endregion
-
+       
         private readonly string corpsDuMail = @"C:\Users\Sweet Family\Desktop\Mail Afersys\Mail Templates\Template.htm";
                
         //public DelegateCommand<string> NavigateCommand { get; set; }
@@ -86,10 +89,23 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
         #endregion
 
         private DateTime CurrentDateTime = DateTime.Now;
-        private readonly IDialogService DialogService;
-        private IEmailMessage EmailMessage = null;
+        private readonly IDialogService _dialogService;
+        //private readonly IMessageBoxConsolidateHelper _messageBoxConsolidateHelper;
+        private IEmailMessage _emailMessage = null;
 
         #region -- Properties -- 
+        public bool CheckIfCanSendMail
+        {
+            get { return _checkIfCanSendMail; }
+            set { SetProperty(ref _checkIfCanSendMail, value); }
+        }
+
+        public bool IsAdminEmailValid
+        {
+            get { return _isAdminEmailValidVar; }
+            set { SetProperty(ref _isAdminEmailValidVar, value); }
+        }
+
         public string MailTemplate
         {
             get { return _mailTemplate; }
@@ -187,13 +203,15 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
             set { SetProperty(ref _isMainGridEnable, value); }
         }
         #endregion  
-
+       
         #region -- Contructor --
         public EnvoiFichePaieViewModel(IRegionManager regionManager,
             IDialogService dialogService,
             IEmailMessage emailMessage)
         {
-            _logger.Debug($"-- ******************** Demarrage de l'application...******************** --");
+            _logger.Debug($"-- ******************** Demarrage du module [ModuleEnvoiFichePaie] ...******************** --");
+
+            CheckIfCanSendMail = false;
 
             IsPreviewEmail = false;
             IsBccOrCcEmpty = true;
@@ -202,8 +220,8 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
             IsProgressBarVisible = false;
 
             _regionManager = regionManager;
-            DialogService = dialogService;
-            EmailMessage = emailMessage;
+            _dialogService = dialogService;
+            _emailMessage = emailMessage;
 
             //NavigateCommand = new DelegateCommand<string>(Navigate);
 
@@ -297,7 +315,7 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
             if (CanContinuousSendMail)
             {
                 InfoMessage = "Fin de l'envoie des emails.";
-                DialogService.ShowMessage(InfoMessage, "Information",
+                _dialogService.ShowMessage(InfoMessage, "Information",
                                            MessageBoxButton.OK,
                                            MessageBoxImage.Information,
                                            MessageBoxResult.Yes);
@@ -321,10 +339,11 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
                 !RegexMailUtilities.IsValidEmail(email))
             {
                 CanContinuousSendMail = false;
-                ErreurMessage = $"Impossoble d'envoyer des mails.\n Assurez-vous que l'adresse : [{email}] saisie soit valide.";
-                _logger.Error(ErreurMessage);
+                ErrorMessage = string.Format(ErrorMessageLabels.ImpossibleToSendMailMsg, email);
+                //ErrorMessage = $"Impossoble d'envoyer des mails.\n Assurez-vous que l'adresse : [{email}] saisie soit valide.";
+                _logger.Error(ErrorMessage);
 
-                DialogService.ShowMessage(ErreurMessage, "Error",
+                _dialogService.ShowMessage(ErrorMessage, "Error",
                                            MessageBoxButton.OK,
                                            MessageBoxImage.Error,
                                            MessageBoxResult.Yes);
@@ -358,14 +377,17 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
 
         private void OnSendMail(object obj)
         {
-            _logger.Debug($"==> Debut envoie d'email.");
-            Console.WriteLine("Send mail.");
-            IsPreviewEmail = false;
-            bgWorkerExport.RunWorkerAsync();
+            if (CheckIfCanSendMail)
+            {
+                _logger.Debug($"==> Debut envoie d'email.");
+                Console.WriteLine("Send mail.");
+                IsPreviewEmail = false;
+                bgWorkerExport.RunWorkerAsync();
+            }           
         }
 
         private void OnSendPreview(object obj)
-        {
+        {            
             _logger.Debug($"==> Debut envoie d'email de test.");
             Console.WriteLine("Send mail to me.");
             IsPreviewEmail = true;
@@ -402,31 +424,37 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
                     {
                         CountData = MyDictionnary.Count;
                         _logger.Debug($"==> Fin de la récupération du dictionare consolidé.");
+
+                        CheckIfCanSendMail = true;
                     }
                     else
                     {
-                        _logger.Debug($"==> Erreur durant la consolidation du dictionare.");
-                        ErreurMessage = $"Erreur durant la consolidation du dictionare.";
-                        _logger.Error($"==> {ErreurMessage}");
-                        DialogService.ShowMessage(ErreurMessage, "Error",
-                                                   MessageBoxButton.OK,
-                                                   MessageBoxImage.Error,
-                                                   MessageBoxResult.Yes);
+                        ErrorMessage = ErrorMessageLabels.CantConsolidateDictionnaryMsg;
+                        _logger.Error($"==> {ErrorMessage}");
+
+                        _dialogService.ShowMessage(ErrorMessage, "Error",
+                                              MessageBoxButton.OK,
+                                              MessageBoxImage.Error,
+                                              MessageBoxResult.Yes);
+
                         IsFilePathCorrect = false;
+                        IsFilePathVisible = false;
                     }
                 }
                 else
                 {
-                    ErreurMessage = $"Le repertoire selectionné n'est pas valide";
-                    _logger.Error($"==> {ErreurMessage}");
-                    DialogService.ShowMessage(ErreurMessage, "Error",
-                                               MessageBoxButton.OK,
-                                               MessageBoxImage.Error,
-                                               MessageBoxResult.Yes);
+                    ErrorMessage = ErrorMessageLabels.WrongDirectoryMsg;
+                    _logger.Error($"==> {ErrorMessage}");
+
+                    _dialogService.ShowMessage(ErrorMessage, "Error",
+                                              MessageBoxButton.OK,
+                                              MessageBoxImage.Error,
+                                              MessageBoxResult.Yes);
+
                     IsFilePathCorrect = false;
                 }
             }
-        }
+        }                
 
         private bool CanBrowse(object arg)
         {
@@ -435,12 +463,12 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
 
         private bool CanSendPreview(object arg)
         {
-            Console.WriteLine("A modifier!!!!!!!!!!!!!!!!!!!!!!!!");
             return true;
         }
 
         private bool CanSendMail(object arg)
         {
+            var res = CheckIfCanSendMail;
             return true;
         }
 
@@ -456,18 +484,17 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
             string currentMonth = DateTime.Now.ToString("MMMM").ToUpper();
             string sujet = $"Fihe de paie de {currentMonth}.";
 
-            string fullName = itemKey.ToString().Split('@')[0].ToString();
+            //string fullName = itemKey.ToString().Split('@')[0].ToString();
 
             //string corpsDuMail = $"Bonjour {fullName.ToUpper()},\n\nTu trouvera ci-joint ta fiche de paie de du mois de " +
-            //    $"{currentMonth}. \n\nEn te souhaitant bonne réception";
-                     
+            //    $"{currentMonth}. \n\nEn te souhaitant bonne réception";                     
 
             if (IsPreviewEmail && string.IsNullOrEmpty(AdminEmail))
             {
-                ErreurMessage = "Vérifier l'adresse mail de l'administrateur";
-                _logger.Debug($"==> {ErreurMessage}.");
+                ErrorMessage = ErrorMessageLabels.CheckAdminEmailMsg;
+                _logger.Debug($"==> {ErrorMessage}.");
 
-                DialogService.ShowMessage(ErreurMessage, "Error",
+                _dialogService.ShowMessage(ErrorMessage, "Error",
                                            MessageBoxButton.OK,
                                            MessageBoxImage.Error,
                                            MessageBoxResult.Yes);
@@ -477,16 +504,28 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
             else
             {
                 // -- Création d'objet mailMessage --
-                EmailMessage.MailBody = corpsDuMail;
-                EmailMessage.Suject = sujet;
-                EmailMessage.FilePath = itemValue;
-                EmailMessage.ToEmail = itemKey;
-                EmailMessage.Bcc = bcc;
-                EmailMessage.Cc = cc;
-                EmailMessage.AdminEmail = AdminEmail;
-                EmailMessage.IsPreviewMail = IsPreviewEmail;
+                _emailMessage.MailBody = corpsDuMail;
+                _emailMessage.Suject = sujet;
+                _emailMessage.FilePath = itemValue;
+                _emailMessage.ToEmail = itemKey;
+                _emailMessage.Bcc = bcc;
+                _emailMessage.Cc = cc;
+                _emailMessage.AdminEmail = AdminEmail;
+                _emailMessage.IsPreviewMail = IsPreviewEmail;
 
-                return SendEmailHelper.SendEmail(EmailMessage);
+                var sendMailResponse = SendEmailHelper.SendEmail(_emailMessage);
+
+                if (sendMailResponse == false)
+                {
+                    ErrorMessage = "Erreur durant l'envoie de l'email. \n Vous devez saisir l'adresse mail administrateur!";
+                    _logger.Debug($"==> {ErrorMessage}.");
+
+                    _dialogService.ShowMessage(ErrorMessage, "Error",
+                                               MessageBoxButton.OK,
+                                               MessageBoxImage.Error,
+                                               MessageBoxResult.Yes);
+                }
+                return sendMailResponse;
             }
         }
 
@@ -502,8 +541,8 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
 
             if (MYDataTable.Rows.Count < 1)
             {
-                ErreurMessage = "la dataTable ne contient aucune donnée.";
-                _logger.Error($"==> {ErreurMessage}.");
+                ErrorMessage = ErrorMessageLabels.NoDataInDataTableMsg;
+                _logger.Error($"==> {ErrorMessage}.");
                 return null;
             }
 
@@ -526,8 +565,8 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
                             // -- Check filePath --
                             if (!string.IsNullOrWhiteSpace(filePath))
                             {
-                                //if (File.Exists(filePath))
-                                //{
+                                if (File.Exists(filePath))
+                                {
                                     // -- Get file name --
                                     var fileName = Path.GetFileName(filePath);
 
@@ -541,17 +580,17 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
                                     // -- $"==> Rafraichissement du dictionaire." --
                                     if (fullName == file)
                                         myDictionnary.Add(mail, filePath);
-                                //}
-                                //else
-                                //{
-                                //    ErreurMessage = $"Vérifier le chemin du fichier\n [{ MYDataTable.Rows[i][1].ToString() }]";
-                                //    _logger.Error($"==> {ErreurMessage}.");
-                                //}
+                                }
+                                else
+                                {
+                                    ErrorMessage = string.Format(ErrorMessageLabels.CheckFilePathMsg, MYDataTable.Rows[i][1].ToString());
+                                    _logger.Error($"==> {ErrorMessage}.");
+                                }
                             }
                             else
                             {
-                                ErreurMessage = $"Vérifier le chemin du fichier\n [{ MYDataTable.Rows[i][1].ToString() }]";
-                                _logger.Error($"==> {ErreurMessage}");
+                                ErrorMessage = string.Format(ErrorMessageLabels.CheckFilePathMsg, MYDataTable.Rows[i][1].ToString());
+                                _logger.Error($"==> {ErrorMessage}");
                             }
                         }
                     }
@@ -560,15 +599,15 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
             }
             catch (Exception ex)
             {
-                ErreurMessage = $"Une erreur n'est produite : pour plus de précisions,\n consulter [{ex.ToString()}].";
-                _logger.Error($"==> {ErreurMessage}.");
+                ErrorMessage = string.Format(ErrorMessageLabels.AnErreurOccuredMsg, ex.ToString());
+                _logger.Error($"==> {ErrorMessage}.");
                 throw new Exception(ex.ToString());
             }
             finally
             {
-                if (ErreurMessage != null)
+                if (ErrorMessage != null)
                 {
-                    DialogService.ShowMessage(ErreurMessage, "Error",
+                    _dialogService.ShowMessage(ErrorMessage, "Error",
                                               MessageBoxButton.OK,
                                               MessageBoxImage.Error,
                                               MessageBoxResult.Yes);
@@ -578,16 +617,24 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
             return myDictionnary;
         }
 
-        //private void Navigate(string uri)
-        //{
-        //    if (uri != null)
-        //    {
-        //        //// -- Pour ajouter un callBack NavigationResult --
-        //        //_regionManager.RequestNavigate("ContentRegion", uri, NavigationComplete);
+        /// <summary>
+        /// -- !!!!!!!!!!!!!!!!!!!!!!!!!! --
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns></returns>
+        bool IsValidEmail(string email)
+        {
+            try
+            {
+                var addr = new System.Net.Mail.MailAddress(email);
+                return addr.Address == email;
+            }
+            catch
+            {
+                return false;
+            }
+        }
 
-        //        _regionManager.RequestNavigate("ContentRegion", uri);
-        //    }
-        //} 
         #endregion
 
         #region -- Dispose methode --
