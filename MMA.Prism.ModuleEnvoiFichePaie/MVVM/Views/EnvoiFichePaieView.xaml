@@ -8,6 +8,7 @@
              xmlns:system="clr-namespace:System;assembly=mscorlib"      
              xmlns:prism="http://prismlibrary.com/"
              xmlns:converter="clr-namespace:MMA.Prism.ModuleEnvoiFichePaie.Helpers.Converters"
+             xmlns:helper="clr-namespace:MMA.Prism.ModuleEnvoiFichePaie.Helpers"
              prism:ViewModelLocator.AutoWireViewModel="True" 
              MaxHeight="560" MaxWidth="800">
 
@@ -17,7 +18,7 @@
 
         <!---  ************** En complement de Textbox validation ************** TargetType="{x:Type TextBox} -->
         <Style x:Key="CustomTextBoxTextStyle" TargetType="TextBox">
-            <Setter Property="BorderBrush" Value="Green" />
+            <Setter Property="BorderBrush" Value="LightGreen" />
             <Setter Property="MinWidth" Value="392" />
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="FontSize" Value="15"/>
@@ -119,7 +120,7 @@
                     FontSize="15" Margin="5" Width="150" 
                     FontWeight="SemiBold" Command="{Binding BrowseCommand}" Cursor="Hand"/>
 
-            <!-- FilePaht -->
+            <!-- FilePath -->
             <TextBlock Grid.Row="2" Grid.Column="1" FontSize="13" Margin="5" TextWrapping="Wrap" 
                          TextAlignment="Center" Text="{Binding FilePath, UpdateSourceTrigger=PropertyChanged}"
                          Visibility="{Binding IsFilePathCorrect, Converter={StaticResource booleanToVisibilityConverter}}"/>
@@ -165,16 +166,20 @@
                 <TextBlock Grid.Row="2" Grid.Column="0" FontSize="13" Margin="0 9 0 0" TextWrapping="Wrap" 
                          HorizontalAlignment="Right" TextAlignment="Center" Text="Model de mail:"/>
                 <TextBox Grid.Row="2" Grid.Column="1" Margin="5" MinHeight="50" 
-                         Text="{Binding MailTemplate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">                    
+                         Text="{Binding MailTemplate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                 </TextBox>
+
+                <!--<RichTextBox Grid.Row="2" Grid.Column="1" Margin="5" MinHeight="50"
+                             helper:RichTextBoxHelper.DocumentXaml="{Binding MailTemplate}"/>-->
 
                 <!-- AdminEmail -->
                 <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="1" 
                             Height="30" HorizontalAlignment="Center">
                     <TextBlock FontSize="13" TextWrapping="Wrap" TextAlignment="Center" Margin="1" Height="18"
-                             Text="Email administrateur :"/>
-                    <TextBox x:Name="textBoxAdminEmail" Margin="5 1 3 1" FontSize="13" MinWidth="150" MaxWidth="300"
-                             IsEnabled="{Binding ElementName=UpdateAdminEmail, Path=IsChecked}" Style="{StaticResource CustomTextBoxTextStyle}">
+                             Text="Email administrateur :  "/>
+                    <TextBox x:Name="textBoxAdminEmail" Margin="0" FontSize="13" MinWidth="150" MaxWidth="300" 
+                             IsEnabled="{Binding ElementName=UpdateAdminEmail, Path=IsChecked}" BorderBrush="{Binding BorderBrush}"
+                             Style="{StaticResource CustomTextBoxTextStyle}" BorderThickness="{Binding BorderThickness}">
                         <Binding Path="AdminEmail" FallbackValue="Email de l'administrateur" 
                                  UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
                             <Binding.ValidationRules>
@@ -201,9 +206,10 @@
                     <Button Content="{Binding SendByMailLabelBtn, FallbackValue=Envoyer}" FontSize="15"
                             Height="40" Cursor="Hand" FontWeight="SemiBold"
                             Command="{Binding SendMailCommand}"/>
+                    <!--IsEnabled="{Binding CheckIfCanSendMail, Converter={StaticResource IsButtonEnabledConverter}}"-->
                     <Button Content="{Binding ClearBccCcBoxLabelBtn, FallbackValue=Réinitialiser}" 
                             FontSize="15" Margin="5 0 0 0" Height="40" Cursor="Hand" FontWeight="SemiBold" 
-                            IsEnabled="{Binding IsBccOrCcEmpty}" Command="{Binding CleerBccOrCcMailCommand}">
+                            Command="{Binding CleerBccOrCcMailCommand}">
                         <Button.Style>
                             <Style TargetType="{x:Type Button}">
                                 <Setter Property="IsEnabled" Value="True" />
@@ -223,7 +229,7 @@
                 </StackPanel>
             </Grid>
 
-            <!--  -->
+            <!-- ProgressBar -->
             <StackPanel Orientation="Vertical" Grid.Row="5" Grid.Column="1" Margin="0 5 0 0" 
                          Visibility="{Binding IsProgressBarVisible, Converter={StaticResource booleanToVisibilityConverter}}">
                 <ProgressBar Height="40" TextBlock.FontWeight="Bold" 

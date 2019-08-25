@@ -10,7 +10,7 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.Helpers.Converters
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             var parsingOk = Regex.IsMatch(value.ToString(), Supplier.MAILPATTERN,
-                RegexOptions.IgnoreCase, 
+                RegexOptions.IgnoreCase,
                 TimeSpan.FromMilliseconds(250));
 
             return parsingOk ? true : false;

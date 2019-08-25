@@ -1,4 +1,5 @@
 ﻿using MMA.Prism.ModuleEnvoiFichePaie.MVVM.Interfaces;
+using NLog;
 using System;
 using System.Configuration;
 using System.IO;
@@ -11,6 +12,8 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.Helpers
 {
     public class SendEmailHelper
     {
+        public static readonly Logger _logger = LogManager.GetCurrentClassLogger();
+
         public static bool SendEmail(IEmailMessage emailMessage)
         {            
             bool result = false;
@@ -52,7 +55,7 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.Helpers
 
                             smtpClient.EnableSsl = true;
 
-                            // -- Si cest un test avant envoie m'enoyer tous les mails --
+                            // -- Si c'est un test avant envoie, m'enoyer tous les mails --
                             if (emailMessage.IsPreviewMail)
                             {
                                 MailConsolidateHelper.CheckCcAndBcc(emailMessage.AdminEmail, mailMessage);
@@ -65,6 +68,7 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.Helpers
                     }
                     else
                     {
+                        _logger.Error($"==> L'adresse email de l'administrateur est obligatoire.");
                         result = false;
                     }
                 }  
@@ -72,6 +76,8 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.Helpers
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
+                _logger.Error($"==> Une erreur s'est produite pendant l'envoie de mail. [SendEmailHelper.SendMail]"
+                    , ex.ToString());
                 throw;
             }
 

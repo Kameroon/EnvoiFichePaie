@@ -13,7 +13,6 @@ namespace MMA.Prism.ModuleEnvoiFichePaie
 
         public FichesPaieModule(IRegionManager regionManager)
         {
-            _logger.Debug($"==> Dans le fichier [FichesPaieModule] de ce module.");
             _regionManager = regionManager;
         }
 

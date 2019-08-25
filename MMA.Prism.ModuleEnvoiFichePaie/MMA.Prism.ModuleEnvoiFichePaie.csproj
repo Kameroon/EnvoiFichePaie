@@ -89,6 +89,7 @@
     <Compile Include="Helpers\Converters\IsButtonEnabledConverter.cs" />
     <Compile Include="Helpers\MailConsolidateHelper.cs" />
     <Compile Include="Helpers\RegexMailUtilities.cs" />
+    <Compile Include="Helpers\RichTextBoxHelper.cs" />
     <Compile Include="Helpers\SendEmailHelper.cs" />
     <Compile Include="Helpers\Supplier.cs" />
     <Compile Include="MVVM\Interfaces\IEmailMessage.cs" />
@@ -108,7 +109,9 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>ModuleEnvoiFichePaieLabels.resx</DependentUpon>
     </Compile>
-    <Compile Include="Services\DataService.cs" />
+    <Compile Include="Services\Contracts\IDataTableFormExcelFileDataService.cs" />
+    <Compile Include="Services\DataTableFormExcelFileDataService.cs" />
+    <Compile Include="Services\Provider.cs" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

@@ -9,11 +9,15 @@
         xmlns:prism="http://prismlibrary.com/"
         prism:ViewModelLocator.AutoWireViewModel="True"
         Title="{Binding ApplicationTitle}"  Closing="OnClosing"
-        Height="560" Width="900" MinHeight="490" MinWidth="700">
+        Height="560" Width="900" MinHeight="490" MinWidth="700"
+        Closed="Window_Closed" 
+        WindowStyle="SingleBorderWindow">
 
     <Border Margin="5" Background="#FF3C7FB1" CornerRadius="5">
         <Grid >
             <Grid.RowDefinitions>
+                <RowDefinition Height="5"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="5"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="5"/>
@@ -26,11 +30,29 @@
                 <ColumnDefinition Width="5"/>
             </Grid.ColumnDefinitions>
 
+            <!--<Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Background="White" Margin="5 0 5 0">                
+                <StackPanel Orientation="Horizontal" Margin="0 0 10 5" HorizontalAlignment="Right">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="30"/>
+                            <ColumnDefinition Width="30"/>
+                            <ColumnDefinition Width="30"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="-" TextAlignment="Center" FontWeight="DemiBold"
+                                   Foreground="Red" FontSize="30"/>
+                        <TextBlock Grid.Column="1" Text="_" TextAlignment="Center" FontWeight="DemiBold"
+                                   Foreground="Red" FontSize="30"/>
+                        <TextBlock Grid.Column="2" Text="X" TextAlignment="Center" FontWeight="DemiBold"
+                                   Foreground="Red" FontSize="25"/>
+                    </Grid>
+                </StackPanel>
+            </Border>-->
+
             <ItemsControl prism:RegionManager.RegionName="MenuRegion"
-                      Grid.Row="1" Grid.Column="1" />
+                      Grid.Row="3" Grid.Column="1" />
 
             <ItemsControl prism:RegionManager.RegionName="MainRegion"
-                      Grid.Row="3" Grid.Column="1" />
+                      Grid.Row="5" Grid.Column="1" />
         </Grid>
     </Border>
 </Window>

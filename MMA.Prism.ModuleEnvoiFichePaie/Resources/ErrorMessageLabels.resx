@@ -129,6 +129,9 @@
   <data name="CheckFilePathMsg" xml:space="preserve">
     <value>Vérifier le chemin du fichier [{0}]</value>
   </data>
+  <data name="CheckFilesPathMsg" xml:space="preserve">
+    <value>Vérifier le chemin des fichiers [{0}]</value>
+  </data>
   <data name="ImpossibleToSendMailMsg" xml:space="preserve">
     <value>Impossoble d'envoyer des mails.\n Assurez-vous que l'adresse : [{0}] saisie soit valide.</value>
   </data>

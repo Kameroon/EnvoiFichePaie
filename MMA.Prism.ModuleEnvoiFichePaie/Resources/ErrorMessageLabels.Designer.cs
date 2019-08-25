@@ -97,6 +97,15 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Vérifier le chemin des fichiers [{0}].
+        /// </summary>
+        internal static string CheckFilesPathMsg {
+            get {
+                return ResourceManager.GetString("CheckFilesPathMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Impossoble d&apos;envoyer des mails.\n Assurez-vous que l&apos;adresse : [{0}] saisie soit valide..
         /// </summary>
         internal static string ImpossibleToSendMailMsg {

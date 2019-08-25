@@ -4,6 +4,8 @@ using MMA.Prism.Infrastructure.Communs.Helpers;
 using MMA.Prism.ModuleEnvoiFichePaie;
 using MMA.Prism.ModuleEnvoiFichePaie.MVVM.Interfaces;
 using MMA.Prism.ModuleEnvoiFichePaie.MVVM.Models;
+using MMA.Prism.ModuleEnvoiFichePaie.Services;
+using MMA.Prism.ModuleEnvoiFichePaie.Services.Contracts;
 using NLog;
 using Prism.Modularity;
 using Prism.Unity;
@@ -23,7 +25,7 @@ namespace MMA.Prism.App
 
         public override void Run(bool runWithDefaultConfiguration)
         {
-            _logger.Debug($"******************************* Démarrage de l'application. ************************************");
+            _logger.Debug($"****** Démarrage de l'application. [Nom de la machine :] {Environment.MachineName} ********");
             base.Run(runWithDefaultConfiguration);
         }
 
@@ -76,6 +78,7 @@ namespace MMA.Prism.App
             Container.RegisterType<IDialogService, DialogService>();
             Container.RegisterType<IEmailMessage, EmailMessage>();
             Container.RegisterType<IMessageBoxConsolidateHelper, MessageBoxConsolidateHelper>();
+            Container.RegisterType<IDataTableFormExcelFileDataService, DataTableFormExcelFileDataService>();
 
             //Container.RegisterTypeForNavigation<UserDetail>("UserDetail");
 

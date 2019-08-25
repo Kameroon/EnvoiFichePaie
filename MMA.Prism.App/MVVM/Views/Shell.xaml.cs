@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NLog;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -20,6 +21,8 @@ namespace MMA.Prism.App.MVVM.Views
     /// </summary>
     public partial class Shell : Window
     {
+        private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
+
         public Shell()
         {
             InitializeComponent();
@@ -33,6 +36,12 @@ namespace MMA.Prism.App.MVVM.Views
             //    e.Cancel = true;
             //}
             e.Cancel = false;
+        }
+
+        private void Window_Closed(object sender, EventArgs e)
+        {
+            _logger.Error($"==> ***** Fermeture de l'application [Nom de la machine :] {Environment.MachineName}. *****");
+            Application.Current.Shutdown();
         }
     }
 }
