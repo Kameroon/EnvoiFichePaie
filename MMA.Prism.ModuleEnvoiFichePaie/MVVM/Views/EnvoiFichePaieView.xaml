@@ -164,7 +164,7 @@
 
                 <!-- Mail template -->
                 <TextBlock Grid.Row="2" Grid.Column="0" FontSize="13" Margin="0 9 0 0" TextWrapping="Wrap" 
-                         HorizontalAlignment="Right" TextAlignment="Center" Text="Model de mail:"/>
+                         HorizontalAlignment="Right" TextAlignment="Center" Text="Model de mail :"/>
                 <TextBox Grid.Row="2" Grid.Column="1" Margin="5" MinHeight="50" 
                          Text="{Binding MailTemplate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                 </TextBox>
