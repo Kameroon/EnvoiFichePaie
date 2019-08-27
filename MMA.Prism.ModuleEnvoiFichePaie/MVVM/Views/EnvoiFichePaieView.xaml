@@ -15,7 +15,7 @@
     <Grid.Resources>
         <BooleanToVisibilityConverter x:Key="booleanToVisibilityConverter"/>
         <converter:IsButtonEnabledConverter x:Key="IsButtonEnabledConverter" />
-
+        <converter:HasAllTextConverter x:Key="HasAllTextConverter"/>
         <!---  ************** En complement de Textbox validation ************** TargetType="{x:Type TextBox} -->
         <Style x:Key="CustomTextBoxTextStyle" TargetType="TextBox">
             <Setter Property="BorderBrush" Value="LightGreen" />
@@ -113,7 +113,7 @@
 
             <!-- Page title -->
             <TextBlock Grid.Row="0" Grid.Column="1" FontWeight="DemiBold" FontSize="24" Margin="0" 
-                         HorizontalAlignment="Center" TextWrapping="Wrap" Text="Envoie de fiche de paie"/>
+                       HorizontalAlignment="Center" TextWrapping="Wrap" Text="Envoie de fiche de paie"/>
 
             <!-- Brower button -->
             <Button Grid.Row="1" Grid.Column="1" Content="{Binding BrowseLabelBtn, FallbackValue=Parcourir}" 
@@ -122,11 +122,11 @@
 
             <!-- FilePath -->
             <TextBlock Grid.Row="2" Grid.Column="1" FontSize="13" Margin="5" TextWrapping="Wrap" 
-                         TextAlignment="Center" Text="{Binding FilePath, UpdateSourceTrigger=PropertyChanged}"
-                         Visibility="{Binding IsFilePathCorrect, Converter={StaticResource booleanToVisibilityConverter}}"/>
+                       TextAlignment="Center" Text="{Binding FilePath, UpdateSourceTrigger=PropertyChanged}"
+                       Visibility="{Binding IsFilePathCorrect, Converter={StaticResource booleanToVisibilityConverter}}"/>
 
             <Grid Grid.Row="4" Grid.Column="1" 
-                     Visibility="{Binding IsFilePathVisible, Converter={StaticResource booleanToVisibilityConverter}}">
+                  Visibility="{Binding IsFilePathVisible, Converter={StaticResource booleanToVisibilityConverter}}">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
@@ -142,8 +142,9 @@
 
                 <!-- Email du BCC -->
                 <TextBlock Grid.Row="0" Grid.Column="0" FontSize="13" Margin="0 9 0 0" TextWrapping="Wrap" 
-                         HorizontalAlignment="Right" TextAlignment="Center" Text="Bcc :"/>
-                <TextBox x:Name="txtBoxBCC" Grid.Row="0" Grid.Column="1" Margin="5" Style="{StaticResource CustomTextBoxTextStyle}">                   
+                           HorizontalAlignment="Right" TextAlignment="Center" Text="Bcc :" FontWeight="DemiBold"/>
+                <TextBox x:Name="txtBoxBCC" Grid.Row="0" Grid.Column="1" Margin="5" 
+                         Style="{StaticResource CustomTextBoxTextStyle}">                   
                     <Binding Path="BccMail" FallbackValue="Email du BCC" UpdateSourceTrigger="PropertyChanged">
                         <Binding.ValidationRules>
                             <converter:EmailValidationRule />
@@ -153,8 +154,9 @@
 
                 <!-- CcMail -->
                 <TextBlock Grid.Row="1" Grid.Column="0" FontSize="13" Margin="0 9 0 0" TextWrapping="Wrap" 
-                         HorizontalAlignment="Right" TextAlignment="Center" Text="Cc :"/>
-                <TextBox x:Name="txtBoxCC" Grid.Row="1" Grid.Column="1" Margin="5" Style="{StaticResource CustomTextBoxTextStyle}">
+                           HorizontalAlignment="Right" TextAlignment="Center" Text="Cc :" FontWeight="DemiBold"/>
+                <TextBox x:Name="txtBoxCC" Grid.Row="1" Grid.Column="1" Margin="5"
+                         Style="{StaticResource CustomTextBoxTextStyle}">
                     <Binding Path="CcMail" FallbackValue="Email du CC" UpdateSourceTrigger="PropertyChanged">
                         <Binding.ValidationRules>
                             <converter:EmailValidationRule />
@@ -163,23 +165,46 @@
                 </TextBox>
 
                 <!-- Mail template -->
-                <TextBlock Grid.Row="2" Grid.Column="0" FontSize="13" Margin="0 9 0 0" TextWrapping="Wrap" 
-                         HorizontalAlignment="Right" TextAlignment="Center" Text="Model de mail :"/>
-                <TextBox Grid.Row="2" Grid.Column="1" Margin="5" MinHeight="50" 
-                         Text="{Binding MailTemplate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
-                </TextBox>
-
-                <!--<RichTextBox Grid.Row="2" Grid.Column="1" Margin="5" MinHeight="50"
-                             helper:RichTextBoxHelper.DocumentXaml="{Binding MailTemplate}"/>-->
-
+                <TextBlock Grid.Row="2" Grid.Column="0" FontSize="13" Margin="0 13 0 0" TextWrapping="Wrap" 
+                           HorizontalAlignment="Right" TextAlignment="Center" 
+                           Text="Model de mail :" FontWeight="DemiBold"/>
+               
+                <StackPanel Grid.Row="2" Grid.Column="1" Margin="5">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="auto"/>
+                        </Grid.RowDefinitions>
+                        <!-- Template mail -->
+                        <TextBox x:Name="textBoxMailTemplate" Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" TextWrapping="Wrap"                               
+                                 Text="{Binding MailTemplate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                        </TextBox>
+                        <!-- Message d'accueil -->
+                        <TextBlock Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" FontWeight="DemiBold" 
+                                   FontSize="18" Margin="3" Foreground="Red" HorizontalAlignment="Center" 
+                                   VerticalAlignment="Center" Text="Veuillez choisir un model de mail!" 
+                                   Visibility="{Binding IsTemplateValide, Converter={StaticResource booleanToVisibilityConverter}}"/>
+                        <!-- Choix du template de mail -->
+                        <Button Grid.Row="1" Grid.Column="1" FontSize="15" Height="35" Margin="2 0 0 0"
+                                Content="{Binding ChooseMailTemplateLabelBtn, FallbackValue=Parcourir}" 
+                                HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                                FontWeight="SemiBold" Command="{Binding ChooseMailTemplateCommand}" Cursor="Hand"/>
+                    </Grid>                   
+                </StackPanel>
+                
                 <!-- AdminEmail -->
                 <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="1" 
                             Height="30" HorizontalAlignment="Center">
                     <TextBlock FontSize="13" TextWrapping="Wrap" TextAlignment="Center" Margin="1" Height="18"
-                             Text="Email administrateur :  "/>
+                             Text="Email administrateur :  " FontWeight="DemiBold"/>
                     <TextBox x:Name="textBoxAdminEmail" Margin="0" FontSize="13" MinWidth="150" MaxWidth="300" 
-                             IsEnabled="{Binding ElementName=UpdateAdminEmail, Path=IsChecked}" BorderBrush="{Binding BorderBrush}"
-                             Style="{StaticResource CustomTextBoxTextStyle}" BorderThickness="{Binding BorderThickness}">
+                             IsEnabled="{Binding ElementName=UpdateAdminEmail, Path=IsChecked}" 
+                             BorderBrush="{Binding BorderBrush}" BorderThickness="{Binding BorderThickness}"
+                             Style="{StaticResource CustomTextBoxTextStyle}" >
                         <Binding Path="AdminEmail" FallbackValue="Email de l'administrateur" 
                                  UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
                             <Binding.ValidationRules>
@@ -187,7 +212,7 @@
                             </Binding.ValidationRules>
                         </Binding>
                     </TextBox>
-                    <CheckBox Name="UpdateAdminEmail" VerticalAlignment="Center" Margin="0 0 0 -14">
+                    <CheckBox Name="UpdateAdminEmail" VerticalAlignment="Center" Margin="0 0 0 -11">
                         <CheckBox.Content>
                             <TextBlock VerticalAlignment="Center" FontSize="13" Text="Modifier" 
                                        FontWeight="SemiBold" Margin="-8 0 0 2"/>
@@ -200,14 +225,79 @@
                             HorizontalAlignment="Center" Margin="5">
                     <Button Content="{Binding SendPreviewLabelBtn, FallbackValue=Prévisualiser}" 
                             FontSize="15" Margin="0 0 5 0" Height="40" Cursor="Hand" 
-                            IsEnabled="{Binding ElementName=textBoxAdminEmail, Path=Text, Converter={StaticResource IsButtonEnabledConverter}}"                    
+                            IsEnabled="{Binding ElementName=textBoxAdminEmail, Path=Text, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged,
+                                        Converter={StaticResource IsButtonEnabledConverter}}"                    
                             FontWeight="SemiBold" Command="{Binding SendPreviewCommand}">                           
                     </Button>
+
+                    <!--<Button Content="{Binding SendByMailLabelBtn, FallbackValue=Envoyer}" FontSize="15"
+                            Height="40" Cursor="Hand" FontWeight="SemiBold" Command="{Binding SendMailCommand}" 
+                            IsEnabled="{Binding ElementName=textBoxAdminEmail, Path=Text, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged,
+                                        Converter={StaticResource IsButtonEnabledConverter}}">
+                    </Button>-->
+
                     <Button Content="{Binding SendByMailLabelBtn, FallbackValue=Envoyer}" FontSize="15"
+                            Height="40" Cursor="Hand" FontWeight="SemiBold" Command="{Binding SendMailCommand}"
+                            IsEnabled="{Binding ElementName=textBoxAdminEmail, Path=Text, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged,
+                                        Converter={StaticResource IsButtonEnabledConverter}}">
+                        <Button.Style>
+                            <Style TargetType="{x:Type Button}" BasedOn="{StaticResource ButtonStyle}">
+                                <Style.Triggers>
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding Text.Length, ElementName=textBoxMailTemplate, UpdateSourceTrigger=PropertyChanged}"
+                                                       Value="0"/>
+                                            <Condition Binding="{Binding Text, ElementName=textBoxMailTemplate}"
+                                                       Value="{x:Static system:String.Empty}" />
+                                        </MultiDataTrigger.Conditions>
+                                        <Setter Property="IsEnabled" Value="False"/>
+                                    </MultiDataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>          
+                    </Button>
+
+
+                    <!-- Test Enable "Envoyer" based on textBox validation OK -->
+                    <!--<Button Content="{Binding SendByMailLabelBtn, FallbackValue=Envoyer}" FontSize="15"
                             Height="40" Cursor="Hand" FontWeight="SemiBold"
-                            Command="{Binding SendMailCommand}"/>
+                            Command="{Binding SendMailCommand}">
+                        <Button.Style>
+                            <Style TargetType="{x:Type Button}" BasedOn="{StaticResource ButtonStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=(Validation.HasError), ElementName=txtBoxBCC}" 
+                                          Value="True">
+                                        <Setter Property="Button.IsEnabled" Value="False" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>-->
+
+                    <!-- Test Enable based on textBox validation Ne fonctionne pas avec un ou l'autre -->
+                    <!--<Button Content="{Binding SendByMailLabelBtn, FallbackValue=Envoyer}" FontSize="15"
+                            Height="40" Cursor="Hand" FontWeight="SemiBold"
+                            Command="{Binding SendMailCommand}">
+                        <Button.Style>
+                            <Style TargetType="{x:Type Button}" BasedOn="{StaticResource ButtonStyle}">
+                                <Setter Property="IsEnabled" Value="True"/>
+                                <Style.Triggers>
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding Path=(Validation.HasError), ElementName=txtBoxBCC}"
+                                                       Value="True"/>
+                                            <Condition Binding="{Binding Path=(Validation.HasError), ElementName=txtBoxCC}"
+                                                       Value="True"/>
+                                        </MultiDataTrigger.Conditions>
+                                        <Setter Property="IsEnabled" Value="False"/>
+                                    </MultiDataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>-->                    
+
                     <!--IsEnabled="{Binding CheckIfCanSendMail, Converter={StaticResource IsButtonEnabledConverter}}"-->
-                    <Button Content="{Binding ClearBccCcBoxLabelBtn, FallbackValue=Réinitialiser}" 
+                    <!--<Button Content="{Binding ClearBccCcBoxLabelBtn, FallbackValue=Réinitialiser}" 
                             FontSize="15" Margin="5 0 0 0" Height="40" Cursor="Hand" FontWeight="SemiBold" 
                             Command="{Binding CleerBccOrCcMailCommand}">
                         <Button.Style>
@@ -216,22 +306,39 @@
                                 <Style.Triggers>
                                     <MultiDataTrigger>
                                         <MultiDataTrigger.Conditions>
-                                            <Condition Binding="{Binding Text, ElementName=txtBoxBCC}" Value="{x:Static system:String.Empty}" />
-                                            <Condition Binding="{Binding Text, ElementName=textBoxCC}" Value="{x:Static system:String.Empty}" />
-                                            <Condition Binding="{Binding Text, ElementName=textBoxAdminEmail}" Value="{x:Static system:String.Empty}" />
+                                            <Condition Binding="{Binding Text, ElementName=txtBoxBCC}"
+                                                       Value="{x:Static system:String.Empty}" />
+                                            <Condition Binding="{Binding Text, ElementName=textBoxCC}"
+                                                       Value="{x:Static system:String.Empty}" />                                           
                                         </MultiDataTrigger.Conditions>
                                         <Setter Property="IsEnabled" Value="False" />
                                     </MultiDataTrigger>
                                 </Style.Triggers>
                             </Style>
                         </Button.Style>
+                    </Button>-->
+
+                    <!-- Test "Réinitialiser" Enable based on textBox has value -->
+                    <!--
+                        https://www.codeproject.com/Questions/1101746/Need-to-enable-the-button-when-all-textbox-has-val
+                        https://stackoverflow.com/questions/33280097/disable-a-button-if-either-of-the-two-textboxes-are-empty
+                    -->
+                    <Button Content="{Binding ClearBccCcBoxLabelBtn, FallbackValue=Réinitialiser}" 
+                            FontSize="15" Margin="5 0 0 0" Height="40" Cursor="Hand"             
+                            FontWeight="SemiBold" Command="{Binding CleerBccOrCcMailCommand}">
+                        <!--<Button.IsEnabled>
+                            <MultiBinding Converter="{StaticResource HasAllTextConverter}">
+                                <Binding ElementName="txtBoxBCC" Path="Text" />
+                                <Binding ElementName="txtBoxCC" Path="Text" />
+                            </MultiBinding>
+                        </Button.IsEnabled>-->
                     </Button>
                 </StackPanel>
             </Grid>
 
             <!-- ProgressBar -->
             <StackPanel Orientation="Vertical" Grid.Row="5" Grid.Column="1" Margin="0 5 0 0" 
-                         Visibility="{Binding IsProgressBarVisible, Converter={StaticResource booleanToVisibilityConverter}}">
+                        Visibility="{Binding IsProgressBarVisible, Converter={StaticResource booleanToVisibilityConverter}}">
                 <ProgressBar Height="40" TextBlock.FontWeight="Bold" 
                            Value="{Binding CurrentProgress, Mode=OneWay, FallbackValue=30, UpdateSourceTrigger=PropertyChanged}"/>
                 <TextBlock HorizontalAlignment="Center" Margin="0 5 0 0" FontWeight="SemiBold" FontSize="15">

@@ -120,6 +120,9 @@
   <data name="BrowseLabelBtn" xml:space="preserve">
     <value>Parcourir</value>
   </data>
+  <data name="ChooseMailTemplateLabelBtn" xml:space="preserve">
+    <value>Parcourir</value>
+  </data>
   <data name="ClearBccCcBoxLabelBtn" xml:space="preserve">
     <value>Effacer Bcc et Cc</value>
   </data>

@@ -21,6 +21,14 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.Helpers.Converters
             throw new NotImplementedException();
         }
 
+        #region --  --
+        //public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        //{
+        //    return (int)value == 0 ? false : true;
+        //}
+
+        #endregion
+
         #region -- MultivalueConverter : IMultiValueConverter  --
         //public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         //{

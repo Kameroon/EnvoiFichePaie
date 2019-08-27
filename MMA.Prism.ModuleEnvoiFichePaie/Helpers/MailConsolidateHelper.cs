@@ -23,7 +23,7 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.Helpers
         {
             body = htmlTemplate.Replace("{E}", toEmail.Split('@')[0]);
             body = body.Replace("{C}", currentMonth);
-            body += "Ceci est un message automatique.";
+            body += "\n\rCeci est un message automatique.";
 
             return body;
         }
@@ -43,5 +43,48 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.Helpers
             mailMessage.Bcc.Clear();
             mailMessage.Bcc.Add(adminEmail);
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static void BuildMailDetail(IEmailMessage emailMessage, string corpsDuMail,
+            string sujet, string itemValue, string itemKey, string bcc,
+            string cc, string adminEmail, bool isPreviewEmail)
+        {
+            emailMessage.MailBody = corpsDuMail;
+            emailMessage.Suject = sujet;
+            emailMessage.FilePath = itemValue;
+            emailMessage.ToEmail = itemKey;
+            emailMessage.Bcc = bcc;
+            emailMessage.Cc = cc;
+            emailMessage.AdminEmail = adminEmail;
+            emailMessage.IsPreviewMail = isPreviewEmail;
+        }
+
+        ///// <summary>
+        ///// -- Check de la saisie user de Bccmail et Ccmail --
+        ///// </summary>
+        ///// <param name="email"></param>
+        //public static void ValidateEmail(string email)
+        //{
+        //    // -- $"==> Vérification de email saisie." --
+        //    if ((!string.IsNullOrEmpty(email) && !RegexMailUtilities.IsValidEmail(email)) &&
+        //        !RegexMailUtilities.IsValidEmail(email))
+        //    {
+        //        CanContinuousSendMail = false;
+        //        ErrorMessage = string.Format(ErrorMessageLabels.ImpossibleToSendMailMsg, email);
+        //        _logger.Error(ErrorMessage);
+
+        //        _dialogService.ShowMessage(ErrorMessage, "ERROR",
+        //                                   MessageBoxButton.OK,
+        //                                   MessageBoxImage.Error,
+        //                                   MessageBoxResult.Yes);
+        //    }
+        //    else
+        //    {
+        //        _logger.Debug($"==> Poursuite de l'envoie de mail après vérification de l'email.");
+        //        CanContinuousSendMail = true;
+        //    }
+        //}
     }
 }

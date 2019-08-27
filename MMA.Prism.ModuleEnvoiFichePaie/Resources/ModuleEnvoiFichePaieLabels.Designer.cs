@@ -70,6 +70,15 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Parcourir.
+        /// </summary>
+        internal static string ChooseMailTemplateLabelBtn {
+            get {
+                return ResourceManager.GetString("ChooseMailTemplateLabelBtn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Effacer Bcc et Cc.
         /// </summary>
         internal static string ClearBccCcBoxLabelBtn {

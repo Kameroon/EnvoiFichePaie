@@ -86,6 +86,7 @@
   <ItemGroup>
     <Compile Include="FichesPaieModule.cs" />
     <Compile Include="Helpers\Converters\EmailValidationRule.cs" />
+    <Compile Include="Helpers\Converters\HasAllTextConverter.cs" />
     <Compile Include="Helpers\Converters\IsButtonEnabledConverter.cs" />
     <Compile Include="Helpers\MailConsolidateHelper.cs" />
     <Compile Include="Helpers\RegexMailUtilities.cs" />

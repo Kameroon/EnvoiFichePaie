@@ -28,15 +28,15 @@ namespace MMA.Prism.App.MVVM.Views
             InitializeComponent();
         }
 
-        private void OnClosing(object sender, CancelEventArgs e)
-        {
-            //MessageBoxResult result = MessageBox.Show("Really close?", "Warning", MessageBoxButton.YesNo);
-            //if (result != MessageBoxResult.Yes)
-            //{
-            //    e.Cancel = true;
-            //}
-            e.Cancel = false;
-        }
+        //private void OnClosing(object sender, CancelEventArgs e)
+        //{
+        //    //MessageBoxResult result = MessageBox.Show("Really close?", "Warning", MessageBoxButton.YesNo);
+        //    //if (result != MessageBoxResult.Yes)
+        //    //{
+        //    //    e.Cancel = true;
+        //    //}
+        //    e.Cancel = false;
+        //}
 
         private void Window_Closed(object sender, EventArgs e)
         {

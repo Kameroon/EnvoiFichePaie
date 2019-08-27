@@ -38,11 +38,10 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
         private BackgroundWorker bgWorkerExport;
 
         #region -- Privates -- 
-        private string _bccMail = "citoyenlamda@gmail.com";
+        private string _bccMail;
         private string _ccMail; 
-        private string _adminEmail;
+        private string _adminEmail = "citoyenlamda@gmail.com";
         private string _mailTemplate;
-        private bool _isBccOrCcEmpty;
         private string _filePath;
         private bool _isTestMail;
         private bool _isFilePathVisible;
@@ -50,18 +49,21 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
         private bool _isProgressVisibility;
         private double _currentProgress;
         private bool _canContinuousSendMail;
+        private bool _isTemplateValide;
         private bool _isMainGridEnable;
         private bool _isAdminEmailValidVar;
-        private bool _checkIfCanSendMail;
         private int _borderThickness;
         private System.Windows.Media.Brush _borderBrush;
 
         #endregion
 
-        private readonly string corpsDuMail = @"C:\Users\Sweet Family\Desktop\Mail Afersys\Mail Templates\Template.htm";
-               
+        private string bccEmail = null;
+        private string ccEmail = null;
+
+        private readonly string templateMailBody = @"C:\Users\Sweet Family\Desktop\Mail Afersys\Mail Templates\Template.htm";
+
         //public DelegateCommand<string> NavigateCommand { get; set; }
-        //public DelegateCommand<object> CloseTabCommand { get; }               
+        //public DelegateCommand<object> CloseTabCommand { get; }                  
 
         #region -- Labels Initailization --
         private string _applicationLoadingLabel = ModuleEnvoiFichePaieLabels.ModuleLoadingLabel;
@@ -78,10 +80,12 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
 
         #endregion
 
+        public ICommand ChooseMailTemplateCommand { get; private set; }
         public ICommand CleerBccOrCcMailCommand { get; private set; }
         public ICommand SendPreviewCommand { get; private set; }
         public ICommand SendMailCommand { get; private set; }
         public ICommand BrowseCommand { get; private set; }
+        public ICommand CloseCommand { get; private set; }
 
         #region -- ProgressBar properties --
         private string _progressValue;
@@ -109,7 +113,7 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
         public string MailTemplate
         {
             get { return _mailTemplate; }
-            set { _mailTemplate = value; }
+            set { SetProperty(ref _mailTemplate, value); }
         }
 
         public string BccMail
@@ -117,8 +121,11 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
             get { return _bccMail; }
             set
             {
-                SetProperty(ref _bccMail, value);
-                IsBccOrCcEmpty = CheckEmailContent(BccMail);
+                if (_bccMail != value)
+                {
+                    SetProperty(ref _bccMail, value);
+                    bccEmail = _bccMail;
+                }    
             }
         }
 
@@ -127,8 +134,11 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
             get { return _ccMail; }
             set
             {
-                SetProperty(ref _ccMail, value);
-                IsBccOrCcEmpty = CheckEmailContent(CcMail);
+                if (_ccMail != value)
+                {
+                    SetProperty(ref _ccMail, value);
+                    ccEmail = _ccMail;
+                }
             }
         }
 
@@ -139,12 +149,6 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
             {
                 SetProperty(ref _adminEmail, value);
             }
-        }
-
-        public bool IsBccOrCcEmpty
-        {
-            get { return _isBccOrCcEmpty; }
-            set { SetProperty(ref _isBccOrCcEmpty, value); }
         }
 
         public string FilePath
@@ -175,6 +179,12 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
         {
             get { return _isProgressVisibility; }
             set { SetProperty(ref _isProgressVisibility, value); }
+        }
+        
+        public bool IsTemplateValide
+        {
+            get { return _isTemplateValide; }
+            set { SetProperty(ref _isTemplateValide, value); }
         }
 
         public double CurrentProgress
@@ -215,7 +225,7 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
             set { SetProperty(ref _borderBrush, value); }
         }
 
-        #endregion
+        #endregion IsTemplateValide
 
         #region -- Contructor --
         public EnvoiFichePaieViewModel(IRegionManager regionManager,
@@ -226,11 +236,10 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
             _logger.Debug($"-- ******** Demarrage du module ******** [Nom de la machine :] {Environment.MachineName} ******* --");
 
             IsPreviewEmail = false;
-            IsBccOrCcEmpty = true;
             IsFilePathVisible = false;
             IsMainGridEnable = true;
             IsProgressBarVisible = false;
-
+            
             _regionManager = regionManager;
             _dialogService = dialogService;
             _emailMessage = emailMessage;
@@ -238,13 +247,13 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
 
             //NavigateCommand = new DelegateCommand<string>(Navigate);
 
-            MailTemplate = corpsDuMail != null ? File.ReadAllText(corpsDuMail, Encoding.Default) : null;
-
             _logger.Debug($"==> Debut Initialisation des commandes...");
             BrowseCommand = new DelegateCommand(OnBrowse, CanBrowse);
-            SendMailCommand = new DelegateCommand<object>(OnSendMail, CanSendMail); //.ObservesProperty(() => _emailMessage.ToEmail);
-            SendPreviewCommand = new DelegateCommand<object>(OnSendPreview, CanSendPreview);
-            CleerBccOrCcMailCommand = new DelegateCommand<object>(OnClearBccAndCcMail, CanClearBccOrCcMail);
+            SendMailCommand = new DelegateCommand(OnSendMail, CanSendMail); //.ObservesProperty(() => _emailMessage.ToEmail);
+            SendPreviewCommand = new DelegateCommand(OnSendPreview, CanSendPreview);
+            CleerBccOrCcMailCommand = new DelegateCommand(OnClearBccAndCcMail, CanClearBccOrCcMail);
+            ChooseMailTemplateCommand = new DelegateCommand(OnChooseMailTemplate, CanChooseMailTemplate);
+
             _logger.Debug($"==> Fin Initialisation des commandes...");
 
             #region -- thread for cut chart --
@@ -255,6 +264,7 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
             bgWorkerExport.ProgressChanged += new ProgressChangedEventHandler(this.Export_ProgressChanged);
             #endregion
         }
+
         #endregion
 
         #region -- Methodes --
@@ -293,9 +303,48 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
                     var itemKey = item.Key;
                     var itemValue = item.Value;
 
+                    _logger.Debug($"==> Debut vérification du format des champs BCC et CC.");
+                    var ed = string.IsNullOrEmpty(bccEmail);
+                    var de = RegexMailUtilities.IsValidEmail(bccEmail);
+
+                    var ea = string.IsNullOrEmpty(ccEmail);
+                    var ee = RegexMailUtilities.IsValidEmail(ccEmail);
+
+                    if (!string.IsNullOrEmpty(bccEmail) || !string.IsNullOrEmpty(ccEmail))
+                    {
+                       
+                    }
+                    else
+                    {
+                        if (!RegexMailUtilities.IsValidEmail(bccEmail) ||
+                            !RegexMailUtilities.IsValidEmail(ccEmail))
+                        {
+
+                        }
+                    }
+
+                    
+                    //if ((string.IsNullOrEmpty(bccEmail) || !RegexMailUtilities.IsValidEmail(bccEmail)) ||
+                    //    (string.IsNullOrEmpty(ccEmail) || !RegexMailUtilities.IsValidEmail(ccEmail)))
+                    //{
+                    //    ErrorMessage = "Vérifier le format des champs Bcc, Cc";
+                    //    _logger.Error($"==> {ErrorMessage}");
+                    //    _dialogService.ShowMessage(ErrorMessage, "ERROR",
+                    //                       MessageBoxButton.OK,
+                    //                       MessageBoxImage.Error,
+                    //                       MessageBoxResult.Yes);
+
+                    //    CanContinuousSendMail = false;
+                    //    break;
+                    //}
+
+                    _logger.Debug($"==> Fin vérification du format des champs BCC et CC.");
+
                     // -- Send mail --
+                    _logger.Debug($"==> Apple de la méthode de création de mail. [BuildMailBody]");
                     if (BuildMailBody(itemKey, itemValue, BccMail, CcMail) == false)
                     {
+                        _logger.Error($"==> Erreur pendant la construction d mail. [BuildMailBody]");
                         CanContinuousSendMail = false;
                         break;
                     }
@@ -325,25 +374,29 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
         /// <param name="e"></param>
         private void Export_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            if (CanContinuousSendMail)
+            if (ErrorMessage == null)
             {
-                InfoMessage = "Fin de l'envoie des emails.";
-                
-                _dialogService.ShowMessage(InfoMessage, "INFORMATION",
-                                           MessageBoxButton.OK,
-                                           MessageBoxImage.Information,
-                                           MessageBoxResult.Yes);
+                if (CanContinuousSendMail)
+                {
+                    InfoMessage = "Fin de l'envoie des emails.";
 
-                _logger.Debug($"==> {InfoMessage}.");
+                    _dialogService.ShowMessage(InfoMessage, "INFORMATION",
+                                               MessageBoxButton.OK,
+                                               MessageBoxImage.Information,
+                                               MessageBoxResult.Yes);
+
+                    _logger.Debug($"==> {InfoMessage}.");
+                }
             }
 
+            ErrorMessage = null;
             IsProgressBarVisible = false;
             IsMainGridEnable = true;
         }
         #endregion
 
         /// <summary>
-        /// -- Check de la ssisie user de Bccmail et Ccmail --
+        /// -- Check de la saisie user de Bccmail et Ccmail --
         /// </summary>
         /// <param name="email"></param>
         private void ValidateEmail(string email)
@@ -368,27 +421,19 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
             }
         }
 
-        private bool CheckEmailContent(string email)
+        private bool CanClearBccOrCcMail()
         {
-            return !string.IsNullOrWhiteSpace(email) || !string.IsNullOrEmpty(email);
+            return true;
         }
 
-        private bool CanClearBccOrCcMail(object arg)
-        {
-            return CheckEmailContent(BccMail) || CheckEmailContent(CcMail);
-        }
-
-        private void OnClearBccAndCcMail(object obj)
+        private void OnClearBccAndCcMail()
         {
             _logger.Debug($"==> Effacement de l'un de l'autre des Bcc ou Cc ou des deux.");
-            if (CheckEmailContent(BccMail) || CheckEmailContent(CcMail))
-            {
-                BccMail = string.Empty;
-                CcMail = string.Empty;
-            }
+            BccMail = "";
+            CcMail = "";
         }
 
-        private void OnSendMail(object obj)
+        private void OnSendMail()
         {
             _logger.Debug($"==> Debut envoie d'email.");
             Console.WriteLine("Send mail.");
@@ -396,7 +441,7 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
             bgWorkerExport.RunWorkerAsync();
         }
 
-        private void OnSendPreview(object obj)
+        private void OnSendPreview()
         {            
             _logger.Debug($"==> Debut envoie d'email de test.");
             Console.WriteLine("Send mail to me.");
@@ -420,8 +465,10 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
                 _logger.Debug($"==> Vérification du chemin d'accès du fichier.");
                 if (!string.IsNullOrWhiteSpace(FilePath))
                 {
+                    MailTemplate = null;
                     IsFilePathVisible = true;
                     IsFilePathCorrect = true;
+                    IsTemplateValide = true;
                     ErrorMessage = string.Empty;
 
                     // -- Get datatable --
@@ -470,14 +517,39 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
             return true;
         }
 
-        private bool CanSendPreview(object arg)
+        private bool CanSendPreview()
         {
             return true;
         }
 
-        private bool CanSendMail(object arg)
+        private bool CanSendMail()
         {
             return true;
+        }
+        
+        private bool CanChooseMailTemplate()
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// --  --
+        /// </summary>
+        private void OnChooseMailTemplate()
+        {
+            string selectedFile = string.Empty;
+            OpenFileDialog oDlg = new OpenFileDialog();
+
+            if (DialogResult.OK == oDlg.ShowDialog())
+            {
+                selectedFile = oDlg.FileName;
+                string templateFilePath = selectedFile;
+                _logger.Debug($"==> Vérification du chemin d'accès du fichier.");
+
+                MailTemplate = templateFilePath != null ? File.ReadAllText(templateFilePath, Encoding.Default) : null;
+
+                IsTemplateValide = false;
+            }
         }
 
         /// <summary> 
@@ -493,7 +565,7 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
             string sujet = $"Fihe de paie de {currentMonth}.";
 
             //string fullName = itemKey.ToString().Split('@')[0].ToString();
-            //string corpsDuMail = $"Bonjour {fullName.ToUpper()},\n\nTu trouvera ci-joint ta fiche de paie de du mois de " +
+            //string templateMailBody = $"Bonjour {fullName.ToUpper()},\n\nTu trouvera ci-joint ta fiche de paie de du mois de " +
             //    $"{currentMonth}. \n\nEn te souhaitant bonne réception";                     
 
             if (IsPreviewEmail && string.IsNullOrEmpty(AdminEmail))
@@ -509,17 +581,12 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
                 return false;
             }
             else
-            {
-                // -- Création d'objet mailMessage --
-                _emailMessage.MailBody = corpsDuMail;
-                _emailMessage.Suject = sujet;
-                _emailMessage.FilePath = itemValue;
-                _emailMessage.ToEmail = itemKey;
-                _emailMessage.Bcc = bcc;
-                _emailMessage.Cc = cc;
-                _emailMessage.AdminEmail = AdminEmail;
-                _emailMessage.IsPreviewMail = IsPreviewEmail;
+            {                
+                _logger.Debug($"==> Appel à la méthode de création d'objet mailMessage [MailConsolidateHelper.BuildMailDetail]");
+                MailConsolidateHelper.BuildMailDetail(_emailMessage, templateMailBody,
+                    sujet, itemValue, itemKey, bcc, cc, AdminEmail, IsPreviewEmail);
 
+                _logger.Debug($"==> Appel de la fontion SendMail [SendEmailHelper.SendEmail]");
                 var sendMailResponse = SendEmailHelper.SendEmail(_emailMessage);
 
                 if (sendMailResponse == false)
@@ -542,7 +609,7 @@ namespace MMA.Prism.ModuleEnvoiFichePaie.MVVM.ViewModels
                 }
                 return sendMailResponse;
             }
-        }
+        }        
                 
         /// <summary>
         /// -- Feel dictionary --
